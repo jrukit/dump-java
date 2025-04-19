@@ -1,5 +1,13 @@
 package com.modern.java.document.service;
 
+import com.modern.java.document.entity.BranchEntity;
+import com.modern.java.document.entity.CaseDocumentTransactionInfoEntity;
+import com.modern.java.document.entity.DocumentEntity;
+import com.modern.java.document.entity.UploadDocumentEntity;
+import com.modern.java.document.model.DocumentUploadContext;
+import com.modern.java.document.model.UploadDocumentRequest;
+import com.modern.java.document.repository.DocumentRepository;
+import com.modern.java.document.repository.TransactionDocumentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,7 +46,7 @@ public class DocumentService {
         int seqNo = uploadDocument.getTotalDocument() + 1;
         DocumentUploadContext documentUploadContext = new DocumentUploadContext(
                 file,
-                "/",
+                "",
                 hireeNo,
                 uploadDocument.getDocTransactionSeqNo(),
                 seqNo,
@@ -50,7 +58,10 @@ public class DocumentService {
                 currentDate,
                 requestBy));
 
-        ftpServer.uploadFile(file);
+        ftpServer.uploadFile(
+                documentUploadContext.getRemoteFilePath(),
+                documentUploadContext.getHireeDocumentPath(),
+                file);
     }
 
     String getJpgFormatOrThrow(String contentType) {

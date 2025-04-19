@@ -9,7 +9,7 @@ import java.io.InputStream;
 
 @Service
 public class FtpServer {
-    public boolean uploadFile(MultipartFile file) {
+    public boolean uploadFile(String remotePath, String hireePath, MultipartFile file) {
         FTPClient ftpClient = new FTPClient();
 
         try {
@@ -24,12 +24,12 @@ public class FtpServer {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
             // Change directory or create if doesn't exist
-            if (!ftpClient.changeWorkingDirectory("/home/user")) {
-                ftpClient.makeDirectory("/home/user");
-                ftpClient.changeWorkingDirectory("/home/user");
+            if (!ftpClient.changeWorkingDirectory(hireePath)) {
+                ftpClient.makeDirectory(hireePath);
+                ftpClient.changeWorkingDirectory(hireePath);
             }
 
-            boolean success = ftpClient.storeFile(file.getOriginalFilename(), file.getInputStream());
+            boolean success = ftpClient.storeFile(remotePath, file.getInputStream());
             ftpClient.logout();
             ftpClient.disconnect();
             return success;

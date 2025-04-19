@@ -1,4 +1,4 @@
-package com.modern.java.document.service;
+package com.modern.java.document.model;
 
 import java.util.Date;
 
