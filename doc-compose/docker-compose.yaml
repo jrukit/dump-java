@@ -1,0 +1,26 @@
+services:
+  postgresql:
+    image: mysql
+    restart: always
+    shm_size: 128mb
+    environment:
+      MYSQL_DATABASE: document
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootPass
+    ports:
+      - 3306:3306
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+  ftp-server:
+    container_name: my-ftp-server
+    environment:
+      - PUBLIC_IP=192.168.0.1
+      - FTP_PASS=123
+      - FTP_USER=user
+    image: garethflowers/ftp-server
+    ports:
+      - "20-21:20-21/tcp"
+      - "40000-40009:40000-40009/tcp" # For passive mode
+    volumes:
+      - "./sftp-server:/home/user"
