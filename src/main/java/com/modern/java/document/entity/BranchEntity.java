@@ -1,4 +1,4 @@
-package com.modern.java.document.service;
+package com.modern.java.document.entity;
 
 public class BranchEntity {
     private String companyCode;

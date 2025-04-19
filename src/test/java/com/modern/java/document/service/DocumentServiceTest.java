@@ -1,5 +1,12 @@
 package com.modern.java.document.service;
 
+import com.modern.java.document.entity.BranchEntity;
+import com.modern.java.document.entity.CaseDocumentTransactionInfoEntity;
+import com.modern.java.document.entity.DocumentEntity;
+import com.modern.java.document.entity.UploadDocumentEntity;
+import com.modern.java.document.model.UploadDocumentRequest;
+import com.modern.java.document.repository.DocumentRepository;
+import com.modern.java.document.repository.TransactionDocumentRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -101,7 +108,7 @@ class DocumentServiceTest {
             mockDocumentEntity.setCreatedBy("user001");
             Mockito.verify(documentRepository).save(deepEq(mockDocumentEntity));
 
-            Mockito.verify(ftpServer).uploadFile(mockFile);
+            Mockito.verify(ftpServer).uploadFile("/HIREE789/HIREE789_000_004.jpg", "/HIREE789", mockFile);
         }
 
         @Test
@@ -130,7 +137,7 @@ class DocumentServiceTest {
 
             Mockito.verify(documentService, Mockito.never()).updateTransactionDocument(any(), anyString(), anyString(), any());
             Mockito.verify(documentRepository, Mockito.never()).save(any());
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(any());
+            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -161,7 +168,7 @@ class DocumentServiceTest {
 
             Mockito.verify(documentService, Mockito.never()).updateTransactionDocument(any(), anyString(), anyString(), any());
             Mockito.verify(documentRepository, Mockito.never()).save(any());
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(any());
+            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -192,7 +199,7 @@ class DocumentServiceTest {
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
 
             Mockito.verify(documentRepository, Mockito.never()).save(any());
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(any());
+            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -244,7 +251,7 @@ class DocumentServiceTest {
             Assertions.assertThrows(DataAccessResourceFailureException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
 
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(any());
+            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -290,7 +297,7 @@ class DocumentServiceTest {
                             "user001",
                             MOCK_CURRENT_DATE
                     );
-            BDDMockito.given(ftpServer.uploadFile(mockFile)).willThrow(RuntimeException.class);
+            BDDMockito.given(ftpServer.uploadFile("", "", mockFile)).willThrow(RuntimeException.class);
 
             Assertions.assertThrows(RuntimeException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));

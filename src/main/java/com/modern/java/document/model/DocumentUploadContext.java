@@ -1,4 +1,4 @@
-package com.modern.java.document.service;
+package com.modern.java.document.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;

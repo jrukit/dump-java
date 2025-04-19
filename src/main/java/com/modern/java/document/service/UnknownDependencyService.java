@@ -1,5 +1,7 @@
 package com.modern.java.document.service;
 
+import com.modern.java.document.entity.BranchEntity;
+import com.modern.java.document.entity.CaseDocumentTransactionInfoEntity;
 import org.springframework.stereotype.Service;
 
 @Service
