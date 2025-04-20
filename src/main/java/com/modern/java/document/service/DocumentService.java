@@ -32,7 +32,6 @@ public class DocumentService {
         this.unknownDependencyService = unknownDependencyService;
     }
 
-    // TODO: controller implement validate document method.
     public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String requestBy) throws IOException {
         String jpgFileFormat = this.getJpgFormatOrThrow(file.getContentType());
         String hireeNo = unknownDependencyService.getHireeNoOrThrow(uploadDocumentRequest.getCaseNo());
