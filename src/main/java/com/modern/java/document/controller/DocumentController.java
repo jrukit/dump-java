@@ -1,7 +1,7 @@
 package com.modern.java.document.controller;
 
-import com.modern.java.document.service.DocumentService;
 import com.modern.java.document.model.UploadDocumentRequest;
+import com.modern.java.document.service.DocumentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
