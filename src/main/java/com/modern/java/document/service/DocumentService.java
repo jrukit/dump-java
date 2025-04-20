@@ -32,26 +32,26 @@ public class DocumentService {
     }
 
     public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String hireeNo, String requestBy) {
-        Date currentDate = getCurrentDate();
-        UploadDocumentEntity uploadDocument = this.updateTransactionDocument(
+        Date now = getNow();
+        UploadDocumentEntity createOrUpdateTranDoc = this.createOrUpdateTransactionDocument(
                 uploadDocumentRequest,
                 hireeNo,
                 requestBy,
-                currentDate);
+                now);
 
-        int seqNo = uploadDocument.getTotalDocument() + 1;
+        int seqNo = createOrUpdateTranDoc.getTotalDocument() + 1;
         DocumentUploadContext documentUploadContext = new DocumentUploadContext(
                 file,
                 "",
                 hireeNo,
-                uploadDocument.getDocTransactionSeqNo(),
+                createOrUpdateTranDoc.getDocTransactionSeqNo(),
                 seqNo,
                 ".jpg");
-        documentRepository.save(this.createDocumentEntity(
-                uploadDocument.getDocTransactionId(),
+        documentRepository.save(this.createDocumentFileRecord(
+                createOrUpdateTranDoc.getDocTransactionId(),
                 seqNo,
                 documentUploadContext,
-                currentDate,
+                now,
                 requestBy));
 
         ftpServer.uploadFile(
@@ -60,94 +60,94 @@ public class DocumentService {
                 file);
     }
 
-    Date getCurrentDate() {
+    Date getNow() {
         return new Date();
     }
 
-    UploadDocumentEntity updateTransactionDocument(UploadDocumentRequest documentRequest, String hireeNo, String requestBy, Date date) {
-        List<UploadDocumentEntity> transactionDocuments = this.fetchTransactionDocumentsByCaseNo(documentRequest.getCaseNo());
-        UploadDocumentEntity currentTransactionDocument = this.getCurrentTransactionDocument(documentRequest, transactionDocuments);
-        UploadDocumentEntity uploadDocumentRequest = this.generateTransactionDocument(
-                documentRequest,
+    UploadDocumentEntity createOrUpdateTransactionDocument(UploadDocumentRequest uploadDocumentRequest, String hireeNo, String requestBy, Date date) {
+        List<UploadDocumentEntity> transactionDocuments = this.fetchTransactionDocumentsByCaseNo(uploadDocumentRequest.getCaseNo());
+        UploadDocumentEntity currentTransactionDocument = this.getCurrentTransactionDocument(uploadDocumentRequest, transactionDocuments);
+        UploadDocumentEntity uploadTransactionDocumentRecord = this.resolveTransactionDocument(
+                uploadDocumentRequest,
                 currentTransactionDocument,
                 hireeNo,
                 transactionDocuments.size(),
                 requestBy,
                 date);
-        transactionDocumentRepository.save(uploadDocumentRequest);
-        return uploadDocumentRequest;
+        transactionDocumentRepository.save(uploadTransactionDocumentRecord);
+        return uploadTransactionDocumentRecord;
     }
 
-    UploadDocumentEntity getCurrentTransactionDocument(UploadDocumentRequest documentRequest, List<UploadDocumentEntity> documents) {
+    UploadDocumentEntity getCurrentTransactionDocument(UploadDocumentRequest uploadDocumentRequest, List<UploadDocumentEntity> documents) {
         return documents.stream().filter(document ->
-                document.getDocType().equals(documentRequest.getDocType())
-                        && document.getDocClass().equals(documentRequest.getDocClass())
+                document.getDocType().equals(uploadDocumentRequest.getDocType())
+                        && document.getDocClass().equals(uploadDocumentRequest.getDocClass())
                         && document.getDocStatus().equals("NEW")).findAny().orElse(null);
     }
 
     List<UploadDocumentEntity> fetchTransactionDocumentsByCaseNo(String caseNo) {
-        List<UploadDocumentEntity> transactionDocuments = transactionDocumentRepository.findByCaseNo(caseNo);
-        if (transactionDocuments == null) {
+        List<UploadDocumentEntity> documents = transactionDocumentRepository.findByCaseNo(caseNo);
+        if (documents == null) {
             throw new UploadCreditCardDocumentException("findByCaseNo not found.");
         }
-        return transactionDocuments;
+        return documents;
     }
 
-    UploadDocumentEntity generateTransactionDocument(UploadDocumentRequest documentRequest, UploadDocumentEntity currentDocument, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
+    UploadDocumentEntity resolveTransactionDocument(UploadDocumentRequest uploadDocumentRequest, UploadDocumentEntity currentDocument, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
         return currentDocument != null
-                ? generateUploadDocumentWithCurrentDocument(currentDocument, hireeNo, reqBy, date)
-                : generateUploadDocumentWithDocumentRequest(documentRequest, hireeNo, sizeOfDocument, reqBy, date);
+                ? createTransactionDocumentFromRequest(currentDocument, hireeNo, reqBy, date)
+                : createNextTransactionDocument(uploadDocumentRequest, hireeNo, sizeOfDocument, reqBy, date);
     }
 
-    private UploadDocumentEntity generateUploadDocumentWithDocumentRequest(UploadDocumentRequest documentRequest, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
+    private UploadDocumentEntity createNextTransactionDocument(UploadDocumentRequest documentRequest, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
         String caseNo = documentRequest.getCaseNo();
-        UploadDocumentEntity uploadDocument = new UploadDocumentEntity();
-        uploadDocument.setCaseNo(caseNo);
-        uploadDocument.setDocType(
+        UploadDocumentEntity document = new UploadDocumentEntity();
+        document.setCaseNo(caseNo);
+        document.setDocType(
                 unknownDependencyService
                         .getDocTypeCode(documentRequest.getDocType()));
-        uploadDocument.setDocClass(
+        document.setDocClass(
                 unknownDependencyService
                         .getDocClassCode(documentRequest.getDocClass()));
         BranchEntity branch = unknownDependencyService.getBranchById(documentRequest.getLocationBranchTeamId());
-        uploadDocument.setDestinationCompanyCode(branch.getCompanyCode());
-        uploadDocument.setDestinationOfficeCode(branch.getBranchCode());
-        uploadDocument.setTotalDocument(1);
-        uploadDocument.setDocStatus("NEW");
-        uploadDocument.setHireeNo(hireeNo);
-        uploadDocument.setCreatedDate(date);
-        uploadDocument.setCreatedBy(reqBy);
-        uploadDocument.setDocTransactionSeqNo(this.generateDocTransactionSeqNo(sizeOfDocument));
+        document.setDestinationCompanyCode(branch.getCompanyCode());
+        document.setDestinationOfficeCode(branch.getBranchCode());
+        document.setTotalDocument(1);
+        document.setDocStatus("NEW");
+        document.setHireeNo(hireeNo);
+        document.setCreatedDate(date);
+        document.setCreatedBy(reqBy);
+        document.setDocTransactionSeqNo(this.generateDocTransactionSeqNo(sizeOfDocument));
         CaseDocumentTransactionInfoEntity caseDocTransInfo = unknownDependencyService.getCaseDocTransInfo(caseNo);
-        uploadDocument.setCampaignCode(caseDocTransInfo.getCampaignCode());
-        uploadDocument.setServiceCode(caseDocTransInfo.getServiceCode());
-        uploadDocument.setBuCode(caseDocTransInfo.getBuCode());
-        uploadDocument.setMktCode(caseDocTransInfo.getMktCode());
-        uploadDocument.setBranchId(caseDocTransInfo.getBranchId());
-        return uploadDocument;
+        document.setCampaignCode(caseDocTransInfo.getCampaignCode());
+        document.setServiceCode(caseDocTransInfo.getServiceCode());
+        document.setBuCode(caseDocTransInfo.getBuCode());
+        document.setMktCode(caseDocTransInfo.getMktCode());
+        document.setBranchId(caseDocTransInfo.getBranchId());
+        return document;
     }
 
-    private UploadDocumentEntity generateUploadDocumentWithCurrentDocument(UploadDocumentEntity currentDocument, String hireeNo, String reqBy, Date date) {
-        UploadDocumentEntity uploadDocument = new UploadDocumentEntity();
-        uploadDocument.setDocTransactionId(currentDocument.getDocTransactionId());
-        uploadDocument.setCaseNo(currentDocument.getCaseNo());
-        uploadDocument.setDocType(currentDocument.getDocType());
-        uploadDocument.setDocClass(currentDocument.getDocClass());
-        uploadDocument.setDestinationCompanyCode(currentDocument.getDestinationCompanyCode());
-        uploadDocument.setDestinationOfficeCode(currentDocument.getDestinationOfficeCode());
-        uploadDocument.setTotalDocument(currentDocument.getTotalDocument() + 1);
-        uploadDocument.setDocStatus("NEW");
-        uploadDocument.setHireeNo(hireeNo);
-        uploadDocument.setUpdatedDate(date);
-        uploadDocument.setUpdatedBy(reqBy);
-        return uploadDocument;
+    private UploadDocumentEntity createTransactionDocumentFromRequest(UploadDocumentEntity currentDocument, String hireeNo, String reqBy, Date date) {
+        UploadDocumentEntity document = new UploadDocumentEntity();
+        document.setDocTransactionId(currentDocument.getDocTransactionId());
+        document.setCaseNo(currentDocument.getCaseNo());
+        document.setDocType(currentDocument.getDocType());
+        document.setDocClass(currentDocument.getDocClass());
+        document.setDestinationCompanyCode(currentDocument.getDestinationCompanyCode());
+        document.setDestinationOfficeCode(currentDocument.getDestinationOfficeCode());
+        document.setTotalDocument(currentDocument.getTotalDocument() + 1);
+        document.setDocStatus("NEW");
+        document.setHireeNo(hireeNo);
+        document.setUpdatedDate(date);
+        document.setUpdatedBy(reqBy);
+        return document;
     }
 
     int generateDocTransactionSeqNo(int sizeOfDocument) {
         return sizeOfDocument != 0 ? sizeOfDocument + 1 : 1;
     }
 
-    private DocumentEntity createDocumentEntity(long docTransactionId, int seqNo, DocumentUploadContext document, Date currentDate, String createdBy) {
+    private DocumentEntity createDocumentFileRecord(long docTransactionId, int seqNo, DocumentUploadContext document, Date currentDate, String createdBy) {
         DocumentEntity documentEntity = new DocumentEntity();
         documentEntity.setDocTransactionId(docTransactionId);
         documentEntity.setSeqNo(seqNo);
