@@ -239,7 +239,7 @@ class DocumentServiceTest {
     }
 
     @Nested
-    class UpdateTransactionDocumentTest {
+    class BuildUpdateTransactionDocumentRecordTest {
         @Test
         void shouldBeUploadDocumentEntity() throws ParseException {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
@@ -293,7 +293,7 @@ class DocumentServiceTest {
             mockGenerateTransactionDoc.setHireeNo("HIREE789");
             mockGenerateTransactionDoc.setUpdatedDate(MOCK_CURRENT_DATE);
             mockGenerateTransactionDoc.setUpdatedBy("user001");
-            BDDMockito.given(documentService.generateTransactionDocument(
+            BDDMockito.given(documentService.buildUploadTransactionDocumentRecord(
                     mockUploadDocumentRequest,
                     mockTransactionDocWithNewStatus,
                     "HIRE789",
@@ -385,7 +385,7 @@ class DocumentServiceTest {
 
             BDDMockito.given(documentService.fetchTransactionDocumentsByCaseNo("C123456")).willReturn(List.of(mockTransactionDocWithPendingStatus, mockTransactionDocWithNewStatus));
             BDDMockito.given(documentService.getCurrentTransactionDocument(mockUploadDocumentRequest, mockTransactionDocuments)).willReturn(mockTransactionDocWithNewStatus);
-            BDDMockito.given(documentService.generateTransactionDocument(
+            BDDMockito.given(documentService.buildUploadTransactionDocumentRecord(
                     mockUploadDocumentRequest,
                     mockTransactionDocWithNewStatus,
                     "HIREE789",
@@ -456,7 +456,7 @@ class DocumentServiceTest {
             mockGenerateTransactionDoc.setHireeNo("HIREE789");
             mockGenerateTransactionDoc.setUpdatedDate(MOCK_CURRENT_DATE);
             mockGenerateTransactionDoc.setUpdatedBy("user001");
-            BDDMockito.given(documentService.generateTransactionDocument(
+            BDDMockito.given(documentService.buildUploadTransactionDocumentRecord(
                     mockUploadDocumentRequest,
                     mockTransactionDocWithNewStatus,
                     "HIRE789",
@@ -675,7 +675,7 @@ class DocumentServiceTest {
     }
 
     @Nested
-    class GenerateTransactionDocument {
+    class BuildUploadTransactionDocumentRecord {
         @Test
         void shouldBeTransactionDocument_WithCurrentTransactionExists() {
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
@@ -713,7 +713,7 @@ class DocumentServiceTest {
             expectedTransactionDocument.setUpdatedDate(MOCK_CURRENT_DATE);
             expectedTransactionDocument.setUpdatedBy("user001");
 
-            assertThat(documentService.generateTransactionDocument(
+            assertThat(documentService.buildUploadTransactionDocumentRecord(
                     mockUploadDocumentRequest,
                     currentTransactionDocument,
                     "HIREE789",
@@ -768,7 +768,7 @@ class DocumentServiceTest {
             expectedTransactionDocument.setBuCode("Bu123434");
             expectedTransactionDocument.setCampaignCode("CampaignCode1234");
             expectedTransactionDocument.setMktCode("Mkt1235");
-            assertThat(documentService.generateTransactionDocument(
+            assertThat(documentService.buildUploadTransactionDocumentRecord(
                     mockUploadDocumentRequest,
                     null,
                     "HIREE789",
