@@ -21,7 +21,7 @@ public class DocumentService {
     private final TransactionDocumentRepository transactionDocumentRepository;
     private final DocumentRepository documentRepository;
     private final FtpServer ftpServer;
-    private  final UnknownDependencyService unknownDependencyService;
+    private final UnknownDependencyService unknownDependencyService;
 
     public DocumentService(TransactionDocumentRepository transactionDocumentRepository,
                            DocumentRepository documentRepository,
