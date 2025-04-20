@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -28,10 +27,11 @@ import java.util.Date;
 import java.util.List;
 
 import static helper.DeepEqMatcher.deepEq;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentServiceTest {
@@ -106,9 +106,9 @@ class DocumentServiceTest {
             mockDocumentEntity.setOriginalFileType("image/jpeg");
             mockDocumentEntity.setCreatedDate(MOCK_CURRENT_DATE);
             mockDocumentEntity.setCreatedBy("user001");
-            Mockito.verify(documentRepository).save(deepEq(mockDocumentEntity));
+            verify(documentRepository).save(deepEq(mockDocumentEntity));
 
-            Mockito.verify(ftpServer).uploadFile("/HIREE789/HIREE789_000_004.jpg", "/HIREE789", mockFile);
+            verify(ftpServer).uploadFile("/HIREE789/HIREE789_000_004.jpg", "/HIREE789", mockFile);
         }
 
         @Test
@@ -135,9 +135,9 @@ class DocumentServiceTest {
             Assertions.assertThrows(RuntimeException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
 
-            Mockito.verify(documentService, Mockito.never()).updateTransactionDocument(any(), anyString(), anyString(), any());
-            Mockito.verify(documentRepository, Mockito.never()).save(any());
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
+            verify(documentService, never()).updateTransactionDocument(any(), anyString(), anyString(), any());
+            verify(documentRepository, never()).save(any());
+            verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -166,9 +166,9 @@ class DocumentServiceTest {
             Assertions.assertThrows(RuntimeException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
 
-            Mockito.verify(documentService, Mockito.never()).updateTransactionDocument(any(), anyString(), anyString(), any());
-            Mockito.verify(documentRepository, Mockito.never()).save(any());
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
+            verify(documentService, never()).updateTransactionDocument(any(), anyString(), anyString(), any());
+            verify(documentRepository, never()).save(any());
+            verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -193,13 +193,13 @@ class DocumentServiceTest {
             );
             BDDMockito.given(unknownDependencyService.getHireeNoOrThrow("C123456")).willReturn("HIREE789");
 
-            BDDMockito.willThrow(RuntimeException.class).given(documentService).updateTransactionDocument(any(), Mockito.anyString(), any(), any());
+            BDDMockito.willThrow(RuntimeException.class).given(documentService).updateTransactionDocument(any(), anyString(), any(), any());
 
             Assertions.assertThrows(RuntimeException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
 
-            Mockito.verify(documentRepository, Mockito.never()).save(any());
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
+            verify(documentRepository, never()).save(any());
+            verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -251,7 +251,7 @@ class DocumentServiceTest {
             Assertions.assertThrows(DataAccessResourceFailureException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
 
-            Mockito.verify(ftpServer, Mockito.never()).uploadFile(anyString(), anyString(), any());
+            verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
@@ -302,7 +302,7 @@ class DocumentServiceTest {
             Assertions.assertThrows(RuntimeException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
 
-            Mockito.verify(documentRepository).save(any());
+            verify(documentRepository).save(any());
         }
     }
 
@@ -396,7 +396,7 @@ class DocumentServiceTest {
             Assertions.assertEquals(MOCK_CURRENT_DATE, actual.getUpdatedDate());
             Assertions.assertEquals("user001", actual.getUpdatedBy());
 
-            Mockito.verify(transactionDocumentRepository).save(mockGenerateTransactionDoc);
+            verify(transactionDocumentRepository).save(mockGenerateTransactionDoc);
         }
 
         @Test
@@ -423,7 +423,7 @@ class DocumentServiceTest {
                             "user001",
                             MOCK_CURRENT_DATE));
 
-            Mockito.verify(transactionDocumentRepository, Mockito.never()).save(any());
+            verify(transactionDocumentRepository, never()).save(any());
         }
 
         @Test
@@ -483,7 +483,7 @@ class DocumentServiceTest {
                             "user001",
                             MOCK_CURRENT_DATE));
 
-            Mockito.verify(transactionDocumentRepository, Mockito.never()).save(any());
+            verify(transactionDocumentRepository, never()).save(any());
         }
 
         @Test

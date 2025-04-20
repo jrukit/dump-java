@@ -5,13 +5,12 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
+import java.io.IOException;
 
 @Service
 public class FtpServer {
     public boolean uploadFile(String remotePath, String hireePath, MultipartFile file) {
-        FTPClient ftpClient = new FTPClient();
-
+        FTPClient ftpClient = getFtpClient();
         try {
             ftpClient.connect("localhost", 21);
             boolean login = ftpClient.login("user", "123");
@@ -23,11 +22,7 @@ public class FtpServer {
             ftpClient.enterLocalPassiveMode();
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
-            // Change directory or create if doesn't exist
-            if (!ftpClient.changeWorkingDirectory(hireePath)) {
-                ftpClient.makeDirectory(hireePath);
-                ftpClient.changeWorkingDirectory(hireePath);
-            }
+            createWorkingDir(hireePath, ftpClient);
 
             boolean success = ftpClient.storeFile(remotePath, file.getInputStream());
             ftpClient.logout();
@@ -38,5 +33,17 @@ public class FtpServer {
             e.printStackTrace();
             return false;
         }
+    }
+
+    void createWorkingDir(String hireePath, FTPClient ftpClient) throws IOException {
+        // Change directory or create if doesn't exist
+        if (!ftpClient.changeWorkingDirectory(hireePath)) {
+            ftpClient.makeDirectory(hireePath);
+            ftpClient.changeWorkingDirectory(hireePath);
+        }
+    }
+
+    FTPClient getFtpClient() {
+        return new FTPClient();
     }
 }

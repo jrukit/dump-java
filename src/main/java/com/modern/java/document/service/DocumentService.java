@@ -21,7 +21,7 @@ public class DocumentService {
     private final TransactionDocumentRepository transactionDocumentRepository;
     private final DocumentRepository documentRepository;
     private final FtpServer ftpServer;
-    private  final UnknownDependencyService unknownDependencyService;
+    private final UnknownDependencyService unknownDependencyService;
 
     public DocumentService(TransactionDocumentRepository transactionDocumentRepository,
                            DocumentRepository documentRepository,
@@ -32,7 +32,6 @@ public class DocumentService {
         this.unknownDependencyService = unknownDependencyService;
     }
 
-    // TODO: controller implement validate document method.
     public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String requestBy) throws IOException {
         String jpgFileFormat = this.getJpgFormatOrThrow(file.getContentType());
         String hireeNo = unknownDependencyService.getHireeNoOrThrow(uploadDocumentRequest.getCaseNo());
