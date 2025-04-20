@@ -4,6 +4,7 @@ import com.modern.java.document.entity.BranchEntity;
 import com.modern.java.document.entity.CaseDocumentTransactionInfoEntity;
 import com.modern.java.document.entity.DocumentEntity;
 import com.modern.java.document.entity.UploadDocumentEntity;
+import com.modern.java.document.exception.UploadCreditCardDocumentException;
 import com.modern.java.document.model.UploadDocumentRequest;
 import com.modern.java.document.repository.DocumentRepository;
 import com.modern.java.document.repository.TransactionDocumentRepository;
@@ -60,7 +61,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIREE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
 
@@ -70,8 +70,6 @@ class DocumentServiceTest {
                     "image/jpeg",
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
-
-            BDDMockito.given(unknownDependencyService.getHireeNoOrThrow("C123456")).willReturn("HIREE789");
 
             BDDMockito.given(documentService.getCurrentDate()).willReturn(MOCK_CURRENT_DATE);
 
@@ -95,7 +93,7 @@ class DocumentServiceTest {
                             MOCK_CURRENT_DATE
                     );
 
-            documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001");
+            documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "HIREE789", "user001");
 
             DocumentEntity mockDocumentEntity = new DocumentEntity();
             mockDocumentEntity.setDocTransactionId(1L);
@@ -112,7 +110,7 @@ class DocumentServiceTest {
         }
 
         @Test
-        void shouldBeRuntimeException_WithTxtFormatFile() {
+        void shouldBeUploadCreditCardDocumentException_WithCallUpdateTransactionDocumentThrowsUploadCreditCardDocumentException() {
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
             mockUploadDocumentRequest.setCaseNo("C123456");
             mockUploadDocumentRequest.setDocType("AGREEMENT");
@@ -121,36 +119,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
-            mockUploadDocumentRequest.setCreatedDate(new Date());
-            mockUploadDocumentRequest.setCreatedBy("user001");
-
-            MockMultipartFile mockFile = new MockMultipartFile(
-                    "document",
-                    "dump.txt",
-                    "application/txt",
-                    "Dummy file content".getBytes(StandardCharsets.UTF_8)
-            );
-
-            Assertions.assertThrows(RuntimeException.class,
-                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
-
-            verify(documentService, never()).updateTransactionDocument(any(), anyString(), anyString(), any());
-            verify(documentRepository, never()).save(any());
-            verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
-        }
-
-        @Test
-        void shouldBeRuntimeException_WithCallGetHireeNoOrThrowsRuntimeException() {
-            UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
-            mockUploadDocumentRequest.setCaseNo("C123456");
-            mockUploadDocumentRequest.setDocType("AGREEMENT");
-            mockUploadDocumentRequest.setDocClass("LEGAL");
-            mockUploadDocumentRequest.setDestinationCompanyCode("COMP001");
-            mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
-            mockUploadDocumentRequest.setTotalDocument(1);
-            mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
 
@@ -161,42 +129,10 @@ class DocumentServiceTest {
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
 
-            BDDMockito.given(unknownDependencyService.getHireeNoOrThrow("C123456")).willThrow(IllegalArgumentException.class);
+            BDDMockito.willThrow(UploadCreditCardDocumentException.class).given(documentService).updateTransactionDocument(any(), anyString(), any(), any());
 
-            Assertions.assertThrows(RuntimeException.class,
-                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
-
-            verify(documentService, never()).updateTransactionDocument(any(), anyString(), anyString(), any());
-            verify(documentRepository, never()).save(any());
-            verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
-        }
-
-        @Test
-        void shouldBeRuntimeException_WithCallUpdateTransactionDocumentThrowsRuntimeException() {
-            UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
-            mockUploadDocumentRequest.setCaseNo("C123456");
-            mockUploadDocumentRequest.setDocType("AGREEMENT");
-            mockUploadDocumentRequest.setDocClass("LEGAL");
-            mockUploadDocumentRequest.setDestinationCompanyCode("COMP001");
-            mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
-            mockUploadDocumentRequest.setTotalDocument(1);
-            mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
-            mockUploadDocumentRequest.setCreatedDate(new Date());
-            mockUploadDocumentRequest.setCreatedBy("user001");
-
-            MockMultipartFile mockFile = new MockMultipartFile(
-                    "document",
-                    "dump.jpg",
-                    "image/jpeg",
-                    "Dummy file content".getBytes(StandardCharsets.UTF_8)
-            );
-            BDDMockito.given(unknownDependencyService.getHireeNoOrThrow("C123456")).willReturn("HIREE789");
-
-            BDDMockito.willThrow(RuntimeException.class).given(documentService).updateTransactionDocument(any(), anyString(), any(), any());
-
-            Assertions.assertThrows(RuntimeException.class,
-                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
+            Assertions.assertThrows(UploadCreditCardDocumentException.class,
+                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "HIRE789", "user001"));
 
             verify(documentRepository, never()).save(any());
             verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
@@ -212,7 +148,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
 
@@ -222,7 +157,6 @@ class DocumentServiceTest {
                     "image/jpeg",
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
-            BDDMockito.given(unknownDependencyService.getHireeNoOrThrow("C123456")).willReturn("HIREE789");
 
             BDDMockito.given(documentService.getCurrentDate()).willReturn(MOCK_CURRENT_DATE);
 
@@ -241,7 +175,7 @@ class DocumentServiceTest {
             BDDMockito.willReturn(mockUploadDoc).given(documentService)
                     .updateTransactionDocument(
                             mockUploadDocumentRequest,
-                            "HIREE789",
+                            "HIRE789",
                             "user001",
                             MOCK_CURRENT_DATE
                     );
@@ -249,13 +183,13 @@ class DocumentServiceTest {
             BDDMockito.willThrow(DataAccessResourceFailureException.class).given(documentRepository).save(any());
 
             Assertions.assertThrows(DataAccessResourceFailureException.class,
-                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
+                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "HIRE789", "user001"));
 
             verify(ftpServer, never()).uploadFile(anyString(), anyString(), any());
         }
 
         @Test
-        void shouldThrowsRuntimeException_WithCallUploadDocumentToSFTPThrowsRuntimeException() {
+        void shouldThrowsUploadCreditCardDocumentException_WithCallUploadDocumentToSFTPThrowsUploadCreditCardDocumentException() {
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
             mockUploadDocumentRequest.setCaseNo("C123456");
             mockUploadDocumentRequest.setDocType("AGREEMENT");
@@ -264,7 +198,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
 
@@ -274,7 +207,6 @@ class DocumentServiceTest {
                     "image/jpeg",
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
-            BDDMockito.given(unknownDependencyService.getHireeNoOrThrow("C123456")).willReturn("HIREE789");
 
             BDDMockito.given(documentService.getCurrentDate()).willReturn(MOCK_CURRENT_DATE);
 
@@ -297,25 +229,12 @@ class DocumentServiceTest {
                             "user001",
                             MOCK_CURRENT_DATE
                     );
-            BDDMockito.given(ftpServer.uploadFile("", "", mockFile)).willThrow(RuntimeException.class);
+            BDDMockito.given(ftpServer.uploadFile("/HIREE789/HIREE789_000_004.jpg", "/HIREE789", mockFile)).willThrow(UploadCreditCardDocumentException.class);
 
-            Assertions.assertThrows(RuntimeException.class,
-                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "user001"));
+            Assertions.assertThrows(UploadCreditCardDocumentException.class,
+                    () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "HIREE789", "user001"));
 
             verify(documentRepository).save(any());
-        }
-    }
-
-    @Nested
-    class GetFileType {
-        @Test
-        void shouldBeJpg_WithContentTypeIsJpeg() {
-            Assertions.assertEquals(".jpg", documentService.getJpgFormatOrThrow("image/jpeg"));
-        }
-
-        @Test
-        void shouldBeRuntimeException_WithContentTypeIsTxt() {
-            Assertions.assertThrows(RuntimeException.class, () -> documentService.getJpgFormatOrThrow("application/txt"));
         }
     }
 
@@ -333,7 +252,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(formatter.parse("01-12-2020"));
             mockUploadDocumentRequest.setCreatedBy("user001");
 
@@ -400,7 +318,7 @@ class DocumentServiceTest {
         }
 
         @Test
-        void shouldBeRuntimeException_WithCallFetchTransactionDocumentsByCaseNoThrowsRuntimeException() throws ParseException {
+        void shouldBeUploadCreditCardDocumentException_WithCallFetchTransactionDocumentsByCaseNoThrowsUploadCreditCardDocumentException() throws ParseException {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
 
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
@@ -411,13 +329,12 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(formatter.parse("01-12-2020"));
             mockUploadDocumentRequest.setCreatedBy("user001");
 
-            BDDMockito.given(documentService.fetchTransactionDocumentsByCaseNo("C00000")).willThrow(RuntimeException.class);
+            BDDMockito.given(documentService.fetchTransactionDocumentsByCaseNo("C000003")).willThrow(UploadCreditCardDocumentException.class);
 
-            Assertions.assertThrows(RuntimeException.class,
+            Assertions.assertThrows(UploadCreditCardDocumentException.class,
                     () -> documentService.updateTransactionDocument(mockUploadDocumentRequest,
                             "HIRE789",
                             "user001",
@@ -438,7 +355,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(formatter.parse("01-12-2020"));
             mockUploadDocumentRequest.setCreatedBy("user001");
 
@@ -498,7 +414,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("PENDING");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(formatter.parse("01-12-2020"));
             mockUploadDocumentRequest.setCreatedBy("user001");
 
@@ -593,10 +508,10 @@ class DocumentServiceTest {
         }
 
         @Test
-        void shouldBeRuntimeException_WithCallFindByCaseNoNotFoundData() {
+        void shouldBeUploadCreditCardDocumentException_WithCallFindByCaseNoNotFoundData() {
             BDDMockito.given(transactionDocumentRepository.findByCaseNo("C000002")).willReturn(null);
 
-            Assertions.assertThrows(RuntimeException.class, () -> documentService.fetchTransactionDocumentsByCaseNo("C000002"));
+            Assertions.assertThrows(UploadCreditCardDocumentException.class, () -> documentService.fetchTransactionDocumentsByCaseNo("C000002"));
         }
 
         @Test
@@ -644,7 +559,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIREE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
             Assertions.assertEquals(mockTransactionDocWithNewStatus, documentService.getCurrentTransactionDocument(mockUploadDocumentRequest, mockTransactionDocuments));
@@ -685,7 +599,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIREE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
             Assertions.assertNull(documentService.getCurrentTransactionDocument(mockUploadDocumentRequest, mockTransactionDocuments));
@@ -726,7 +639,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIREE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
             Assertions.assertNull(documentService.getCurrentTransactionDocument(mockUploadDocumentRequest, mockTransactionDocuments));
@@ -756,7 +668,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIREE789");
             mockUploadDocumentRequest.setCreatedDate(new Date());
             mockUploadDocumentRequest.setCreatedBy("user001");
             Assertions.assertNull(documentService.getCurrentTransactionDocument(mockUploadDocumentRequest, mockTransactionDocuments));
@@ -775,7 +686,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF005");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(MOCK_CURRENT_DATE);
             mockUploadDocumentRequest.setCreatedBy("user002");
 
@@ -822,7 +732,6 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setDestinationOfficeCode("OFF001");
             mockUploadDocumentRequest.setTotalDocument(1);
             mockUploadDocumentRequest.setDocStatus("NEW");
-            mockUploadDocumentRequest.setHireeNo("HIRE789");
             mockUploadDocumentRequest.setCreatedDate(MOCK_CURRENT_DATE);
             mockUploadDocumentRequest.setCreatedBy("user0001");
             mockUploadDocumentRequest.setLocationBranchTeamId("LocationBranchTeam1234");

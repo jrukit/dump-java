@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UnknownDependencyService {
-    public String getHireeNoOrThrow(String caseNo) {
+    public String getHireeNo(String caseNo) {
         return "HIREE789";
     }
     public String getDocTypeCode(String docType) {
