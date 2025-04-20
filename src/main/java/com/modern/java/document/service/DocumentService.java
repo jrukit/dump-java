@@ -32,12 +32,12 @@ public class DocumentService {
     }
 
     public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String hireeNo, String requestBy) {
-        Date currentDate = getCurrentDate();
+        Date now = getNow();
         UploadDocumentEntity updateTransactionDocument = this.updateTransactionDocument(
                 uploadDocumentRequest,
                 hireeNo,
                 requestBy,
-                currentDate);
+                now);
 
         int seqNo = updateTransactionDocument.getTotalDocument() + 1;
         DocumentUploadContext documentUploadContext = new DocumentUploadContext(
@@ -51,7 +51,7 @@ public class DocumentService {
                 updateTransactionDocument.getDocTransactionId(),
                 seqNo,
                 documentUploadContext,
-                currentDate,
+                now,
                 requestBy));
 
         ftpServer.uploadFile(
@@ -60,7 +60,7 @@ public class DocumentService {
                 file);
     }
 
-    Date getCurrentDate() {
+    Date getNow() {
         return new Date();
     }
 

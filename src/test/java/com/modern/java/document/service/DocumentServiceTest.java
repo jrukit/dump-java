@@ -71,7 +71,7 @@ class DocumentServiceTest {
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
 
-            BDDMockito.given(documentService.getCurrentDate()).willReturn(MOCK_CURRENT_DATE);
+            BDDMockito.given(documentService.getNow()).willReturn(MOCK_CURRENT_DATE);
 
             UploadDocumentEntity mockUploadDoc = new UploadDocumentEntity();
             mockUploadDoc.setDocTransactionId(1L);
@@ -158,7 +158,7 @@ class DocumentServiceTest {
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
 
-            BDDMockito.given(documentService.getCurrentDate()).willReturn(MOCK_CURRENT_DATE);
+            BDDMockito.given(documentService.getNow()).willReturn(MOCK_CURRENT_DATE);
 
             UploadDocumentEntity mockUploadDoc = new UploadDocumentEntity();
             mockUploadDoc.setDocTransactionId(1L);
@@ -208,7 +208,7 @@ class DocumentServiceTest {
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
 
-            BDDMockito.given(documentService.getCurrentDate()).willReturn(MOCK_CURRENT_DATE);
+            BDDMockito.given(documentService.getNow()).willReturn(MOCK_CURRENT_DATE);
 
             UploadDocumentEntity mockUploadDoc = new UploadDocumentEntity();
             mockUploadDoc.setDocTransactionId(1L);
