@@ -86,7 +86,7 @@ class DocumentServiceTest {
             mockUploadDoc.setUpdatedDate(MOCK_CURRENT_DATE);
             mockUploadDoc.setUpdatedBy("user001");
             BDDMockito.willReturn(mockUploadDoc).given(documentService)
-                    .updateTransactionDocument(
+                    .createOrUpdateTransactionDocument(
                             mockUploadDocumentRequest,
                             "HIREE789",
                             "user001",
@@ -129,7 +129,7 @@ class DocumentServiceTest {
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
 
-            BDDMockito.willThrow(UploadCreditCardDocumentException.class).given(documentService).updateTransactionDocument(any(), anyString(), any(), any());
+            BDDMockito.willThrow(UploadCreditCardDocumentException.class).given(documentService).createOrUpdateTransactionDocument(any(), anyString(), any(), any());
 
             Assertions.assertThrows(UploadCreditCardDocumentException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "HIRE789", "user001"));
@@ -173,7 +173,7 @@ class DocumentServiceTest {
             mockUploadDoc.setUpdatedDate(MOCK_CURRENT_DATE);
             mockUploadDoc.setUpdatedBy("user001");
             BDDMockito.willReturn(mockUploadDoc).given(documentService)
-                    .updateTransactionDocument(
+                    .createOrUpdateTransactionDocument(
                             mockUploadDocumentRequest,
                             "HIRE789",
                             "user001",
@@ -223,7 +223,7 @@ class DocumentServiceTest {
             mockUploadDoc.setUpdatedDate(MOCK_CURRENT_DATE);
             mockUploadDoc.setUpdatedBy("user001");
             BDDMockito.willReturn(mockUploadDoc).given(documentService)
-                    .updateTransactionDocument(
+                    .createOrUpdateTransactionDocument(
                             mockUploadDocumentRequest,
                             "HIREE789",
                             "user001",
@@ -239,7 +239,7 @@ class DocumentServiceTest {
     }
 
     @Nested
-    class BuildUpdateTransactionDocumentRecordTest {
+    class CreateOrUpdateTransactionDocument {
         @Test
         void shouldBeUploadDocumentEntity() throws ParseException {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
@@ -293,7 +293,7 @@ class DocumentServiceTest {
             mockGenerateTransactionDoc.setHireeNo("HIREE789");
             mockGenerateTransactionDoc.setUpdatedDate(MOCK_CURRENT_DATE);
             mockGenerateTransactionDoc.setUpdatedBy("user001");
-            BDDMockito.given(documentService.buildUploadTransactionDocumentRecord(
+            BDDMockito.given(documentService.resolveTransactionDocument(
                     mockUploadDocumentRequest,
                     mockTransactionDocWithNewStatus,
                     "HIRE789",
@@ -301,7 +301,7 @@ class DocumentServiceTest {
                     "user001",
                     MOCK_CURRENT_DATE)).willReturn(mockGenerateTransactionDoc);
 
-            UploadDocumentEntity actual = documentService.updateTransactionDocument(mockUploadDocumentRequest, "HIRE789", "user001", MOCK_CURRENT_DATE);
+            UploadDocumentEntity actual = documentService.createOrUpdateTransactionDocument(mockUploadDocumentRequest, "HIRE789", "user001", MOCK_CURRENT_DATE);
 
             Assertions.assertEquals("C000003", actual.getCaseNo());
             Assertions.assertEquals("AGREEMENT", actual.getDocType());
@@ -335,7 +335,7 @@ class DocumentServiceTest {
             BDDMockito.given(documentService.fetchTransactionDocumentsByCaseNo("C000003")).willThrow(UploadCreditCardDocumentException.class);
 
             Assertions.assertThrows(UploadCreditCardDocumentException.class,
-                    () -> documentService.updateTransactionDocument(mockUploadDocumentRequest,
+                    () -> documentService.createOrUpdateTransactionDocument(mockUploadDocumentRequest,
                             "HIRE789",
                             "user001",
                             MOCK_CURRENT_DATE));
@@ -385,7 +385,7 @@ class DocumentServiceTest {
 
             BDDMockito.given(documentService.fetchTransactionDocumentsByCaseNo("C123456")).willReturn(List.of(mockTransactionDocWithPendingStatus, mockTransactionDocWithNewStatus));
             BDDMockito.given(documentService.getCurrentTransactionDocument(mockUploadDocumentRequest, mockTransactionDocuments)).willReturn(mockTransactionDocWithNewStatus);
-            BDDMockito.given(documentService.buildUploadTransactionDocumentRecord(
+            BDDMockito.given(documentService.resolveTransactionDocument(
                     mockUploadDocumentRequest,
                     mockTransactionDocWithNewStatus,
                     "HIREE789",
@@ -394,7 +394,7 @@ class DocumentServiceTest {
                     MOCK_CURRENT_DATE)).willThrow(RuntimeException.class);
 
             Assertions.assertThrows(RuntimeException.class,
-                    () -> documentService.updateTransactionDocument(mockUploadDocumentRequest,
+                    () -> documentService.createOrUpdateTransactionDocument(mockUploadDocumentRequest,
                             "HIRE789",
                             "user001",
                             MOCK_CURRENT_DATE));
@@ -456,7 +456,7 @@ class DocumentServiceTest {
             mockGenerateTransactionDoc.setHireeNo("HIREE789");
             mockGenerateTransactionDoc.setUpdatedDate(MOCK_CURRENT_DATE);
             mockGenerateTransactionDoc.setUpdatedBy("user001");
-            BDDMockito.given(documentService.buildUploadTransactionDocumentRecord(
+            BDDMockito.given(documentService.resolveTransactionDocument(
                     mockUploadDocumentRequest,
                     mockTransactionDocWithNewStatus,
                     "HIRE789",
@@ -466,7 +466,7 @@ class DocumentServiceTest {
             BDDMockito.willThrow(DataAccessResourceFailureException.class).given(transactionDocumentRepository).save(mockGenerateTransactionDoc);
 
             Assertions.assertThrows(DataAccessResourceFailureException.class,
-                    () -> documentService.updateTransactionDocument(mockUploadDocumentRequest,
+                    () -> documentService.createOrUpdateTransactionDocument(mockUploadDocumentRequest,
                             "HIRE789",
                             "user001",
                             MOCK_CURRENT_DATE));
@@ -675,7 +675,7 @@ class DocumentServiceTest {
     }
 
     @Nested
-    class BuildUploadTransactionDocumentRecord {
+    class ResolveTransactionDocument {
         @Test
         void shouldBeTransactionDocument_WithCurrentTransactionExists() {
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
@@ -713,7 +713,7 @@ class DocumentServiceTest {
             expectedTransactionDocument.setUpdatedDate(MOCK_CURRENT_DATE);
             expectedTransactionDocument.setUpdatedBy("user001");
 
-            assertThat(documentService.buildUploadTransactionDocumentRecord(
+            assertThat(documentService.resolveTransactionDocument(
                     mockUploadDocumentRequest,
                     currentTransactionDocument,
                     "HIREE789",
@@ -768,7 +768,7 @@ class DocumentServiceTest {
             expectedTransactionDocument.setBuCode("Bu123434");
             expectedTransactionDocument.setCampaignCode("CampaignCode1234");
             expectedTransactionDocument.setMktCode("Mkt1235");
-            assertThat(documentService.buildUploadTransactionDocumentRecord(
+            assertThat(documentService.resolveTransactionDocument(
                     mockUploadDocumentRequest,
                     null,
                     "HIREE789",

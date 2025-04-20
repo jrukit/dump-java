@@ -33,22 +33,22 @@ public class DocumentService {
 
     public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String hireeNo, String requestBy) {
         Date now = getNow();
-        UploadDocumentEntity updateTransactionDocument = this.updateTransactionDocument(
+        UploadDocumentEntity createOrUpdateTranDoc = this.createOrUpdateTransactionDocument(
                 uploadDocumentRequest,
                 hireeNo,
                 requestBy,
                 now);
 
-        int seqNo = updateTransactionDocument.getTotalDocument() + 1;
+        int seqNo = createOrUpdateTranDoc.getTotalDocument() + 1;
         DocumentUploadContext documentUploadContext = new DocumentUploadContext(
                 file,
                 "",
                 hireeNo,
-                updateTransactionDocument.getDocTransactionSeqNo(),
+                createOrUpdateTranDoc.getDocTransactionSeqNo(),
                 seqNo,
                 ".jpg");
-        documentRepository.save(this.buildUploadDocumentRecord(
-                updateTransactionDocument.getDocTransactionId(),
+        documentRepository.save(this.createDocumentFileRecord(
+                createOrUpdateTranDoc.getDocTransactionId(),
                 seqNo,
                 documentUploadContext,
                 now,
@@ -64,10 +64,10 @@ public class DocumentService {
         return new Date();
     }
 
-    UploadDocumentEntity updateTransactionDocument(UploadDocumentRequest uploadDocumentRequest, String hireeNo, String requestBy, Date date) {
+    UploadDocumentEntity createOrUpdateTransactionDocument(UploadDocumentRequest uploadDocumentRequest, String hireeNo, String requestBy, Date date) {
         List<UploadDocumentEntity> transactionDocuments = this.fetchTransactionDocumentsByCaseNo(uploadDocumentRequest.getCaseNo());
         UploadDocumentEntity currentTransactionDocument = this.getCurrentTransactionDocument(uploadDocumentRequest, transactionDocuments);
-        UploadDocumentEntity uploadTransactionDocumentRecord = this.buildUploadTransactionDocumentRecord(
+        UploadDocumentEntity uploadTransactionDocumentRecord = this.resolveTransactionDocument(
                 uploadDocumentRequest,
                 currentTransactionDocument,
                 hireeNo,
@@ -93,13 +93,13 @@ public class DocumentService {
         return documents;
     }
 
-    UploadDocumentEntity buildUploadTransactionDocumentRecord(UploadDocumentRequest uploadDocumentRequest, UploadDocumentEntity currentDocument, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
+    UploadDocumentEntity resolveTransactionDocument(UploadDocumentRequest uploadDocumentRequest, UploadDocumentEntity currentDocument, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
         return currentDocument != null
-                ? buildUpdateDocumentFromCurrentDocument(currentDocument, hireeNo, reqBy, date)
-                : buildUploadDocumentFromDocumentRequest(uploadDocumentRequest, hireeNo, sizeOfDocument, reqBy, date);
+                ? createTransactionDocumentFromRequest(currentDocument, hireeNo, reqBy, date)
+                : createNextTransactionDocument(uploadDocumentRequest, hireeNo, sizeOfDocument, reqBy, date);
     }
 
-    private UploadDocumentEntity buildUploadDocumentFromDocumentRequest(UploadDocumentRequest documentRequest, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
+    private UploadDocumentEntity createNextTransactionDocument(UploadDocumentRequest documentRequest, String hireeNo, int sizeOfDocument, String reqBy, Date date) {
         String caseNo = documentRequest.getCaseNo();
         UploadDocumentEntity document = new UploadDocumentEntity();
         document.setCaseNo(caseNo);
@@ -127,7 +127,7 @@ public class DocumentService {
         return document;
     }
 
-    private UploadDocumentEntity buildUpdateDocumentFromCurrentDocument(UploadDocumentEntity currentDocument, String hireeNo, String reqBy, Date date) {
+    private UploadDocumentEntity createTransactionDocumentFromRequest(UploadDocumentEntity currentDocument, String hireeNo, String reqBy, Date date) {
         UploadDocumentEntity document = new UploadDocumentEntity();
         document.setDocTransactionId(currentDocument.getDocTransactionId());
         document.setCaseNo(currentDocument.getCaseNo());
@@ -147,7 +147,7 @@ public class DocumentService {
         return sizeOfDocument != 0 ? sizeOfDocument + 1 : 1;
     }
 
-    private DocumentEntity buildUploadDocumentRecord(long docTransactionId, int seqNo, DocumentUploadContext document, Date currentDate, String createdBy) {
+    private DocumentEntity createDocumentFileRecord(long docTransactionId, int seqNo, DocumentUploadContext document, Date currentDate, String createdBy) {
         DocumentEntity documentEntity = new DocumentEntity();
         documentEntity.setDocTransactionId(docTransactionId);
         documentEntity.setSeqNo(seqNo);
