@@ -4,6 +4,7 @@ import com.modern.java.document.entity.BranchEntity;
 import com.modern.java.document.entity.CaseDocumentTransactionInfoEntity;
 import com.modern.java.document.entity.DocumentEntity;
 import com.modern.java.document.entity.UploadDocumentEntity;
+import com.modern.java.document.exception.UploadCreditCardDocumentException;
 import com.modern.java.document.model.UploadDocumentRequest;
 import com.modern.java.document.repository.DocumentRepository;
 import com.modern.java.document.repository.TransactionDocumentRepository;
@@ -109,7 +110,7 @@ class DocumentServiceTest {
         }
 
         @Test
-        void shouldBeRuntimeException_WithCallUpdateTransactionDocumentThrowsRuntimeException() {
+        void shouldBeUploadCreditCardDocumentException_WithCallUpdateTransactionDocumentThrowsUploadCreditCardDocumentException() {
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
             mockUploadDocumentRequest.setCaseNo("C123456");
             mockUploadDocumentRequest.setDocType("AGREEMENT");
@@ -128,9 +129,9 @@ class DocumentServiceTest {
                     "Dummy file content".getBytes(StandardCharsets.UTF_8)
             );
 
-            BDDMockito.willThrow(RuntimeException.class).given(documentService).updateTransactionDocument(any(), anyString(), any(), any());
+            BDDMockito.willThrow(UploadCreditCardDocumentException.class).given(documentService).updateTransactionDocument(any(), anyString(), any(), any());
 
-            Assertions.assertThrows(RuntimeException.class,
+            Assertions.assertThrows(UploadCreditCardDocumentException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "HIRE789", "user001"));
 
             verify(documentRepository, never()).save(any());
@@ -188,7 +189,7 @@ class DocumentServiceTest {
         }
 
         @Test
-        void shouldThrowsRuntimeException_WithCallUploadDocumentToSFTPThrowsRuntimeException() {
+        void shouldThrowsUploadCreditCardDocumentException_WithCallUploadDocumentToSFTPThrowsUploadCreditCardDocumentException() {
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
             mockUploadDocumentRequest.setCaseNo("C123456");
             mockUploadDocumentRequest.setDocType("AGREEMENT");
@@ -228,9 +229,9 @@ class DocumentServiceTest {
                             "user001",
                             MOCK_CURRENT_DATE
                     );
-            BDDMockito.given(ftpServer.uploadFile("", "", mockFile)).willThrow(RuntimeException.class);
+            BDDMockito.given(ftpServer.uploadFile("/HIREE789/HIREE789_000_004.jpg", "/HIREE789", mockFile)).willThrow(UploadCreditCardDocumentException.class);
 
-            Assertions.assertThrows(RuntimeException.class,
+            Assertions.assertThrows(UploadCreditCardDocumentException.class,
                     () -> documentService.uploadCreditDocument(mockUploadDocumentRequest, mockFile, "HIREE789", "user001"));
 
             verify(documentRepository).save(any());
@@ -317,7 +318,7 @@ class DocumentServiceTest {
         }
 
         @Test
-        void shouldBeRuntimeException_WithCallFetchTransactionDocumentsByCaseNoThrowsRuntimeException() throws ParseException {
+        void shouldBeUploadCreditCardDocumentException_WithCallFetchTransactionDocumentsByCaseNoThrowsUploadCreditCardDocumentException() throws ParseException {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
 
             UploadDocumentRequest mockUploadDocumentRequest = new UploadDocumentRequest();
@@ -331,9 +332,9 @@ class DocumentServiceTest {
             mockUploadDocumentRequest.setCreatedDate(formatter.parse("01-12-2020"));
             mockUploadDocumentRequest.setCreatedBy("user001");
 
-            BDDMockito.given(documentService.fetchTransactionDocumentsByCaseNo("C00000")).willThrow(RuntimeException.class);
+            BDDMockito.given(documentService.fetchTransactionDocumentsByCaseNo("C000003")).willThrow(UploadCreditCardDocumentException.class);
 
-            Assertions.assertThrows(RuntimeException.class,
+            Assertions.assertThrows(UploadCreditCardDocumentException.class,
                     () -> documentService.updateTransactionDocument(mockUploadDocumentRequest,
                             "HIRE789",
                             "user001",
@@ -507,10 +508,10 @@ class DocumentServiceTest {
         }
 
         @Test
-        void shouldBeRuntimeException_WithCallFindByCaseNoNotFoundData() {
+        void shouldBeUploadCreditCardDocumentException_WithCallFindByCaseNoNotFoundData() {
             BDDMockito.given(transactionDocumentRepository.findByCaseNo("C000002")).willReturn(null);
 
-            Assertions.assertThrows(RuntimeException.class, () -> documentService.fetchTransactionDocumentsByCaseNo("C000002"));
+            Assertions.assertThrows(UploadCreditCardDocumentException.class, () -> documentService.fetchTransactionDocumentsByCaseNo("C000002"));
         }
 
         @Test

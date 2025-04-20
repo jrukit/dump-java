@@ -4,6 +4,7 @@ import com.modern.java.document.entity.BranchEntity;
 import com.modern.java.document.entity.CaseDocumentTransactionInfoEntity;
 import com.modern.java.document.entity.DocumentEntity;
 import com.modern.java.document.entity.UploadDocumentEntity;
+import com.modern.java.document.exception.UploadCreditCardDocumentException;
 import com.modern.java.document.model.DocumentUploadContext;
 import com.modern.java.document.model.UploadDocumentRequest;
 import com.modern.java.document.repository.DocumentRepository;
@@ -11,7 +12,6 @@ import com.modern.java.document.repository.TransactionDocumentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class DocumentService {
         this.unknownDependencyService = unknownDependencyService;
     }
 
-    public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String hireeNo, String requestBy) throws IOException {
+    public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String hireeNo, String requestBy) {
         Date currentDate = getCurrentDate();
         UploadDocumentEntity uploadDocument = this.updateTransactionDocument(
                 uploadDocumentRequest,
@@ -88,7 +88,7 @@ public class DocumentService {
     List<UploadDocumentEntity> fetchTransactionDocumentsByCaseNo(String caseNo) {
         List<UploadDocumentEntity> transactionDocuments = transactionDocumentRepository.findByCaseNo(caseNo);
         if (transactionDocuments == null) {
-            throw new RuntimeException("findByCaseNo not found.");
+            throw new UploadCreditCardDocumentException("findByCaseNo not found.");
         }
         return transactionDocuments;
     }
