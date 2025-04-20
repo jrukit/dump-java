@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class DocumentService {
@@ -32,9 +31,7 @@ public class DocumentService {
         this.unknownDependencyService = unknownDependencyService;
     }
 
-    public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String requestBy) throws IOException {
-        String jpgFileFormat = this.getJpgFormatOrThrow(file.getContentType());
-        String hireeNo = unknownDependencyService.getHireeNoOrThrow(uploadDocumentRequest.getCaseNo());
+    public void uploadCreditDocument(UploadDocumentRequest uploadDocumentRequest, MultipartFile file, String hireeNo, String requestBy) throws IOException {
         Date currentDate = getCurrentDate();
         UploadDocumentEntity uploadDocument = this.updateTransactionDocument(
                 uploadDocumentRequest,
@@ -49,7 +46,7 @@ public class DocumentService {
                 hireeNo,
                 uploadDocument.getDocTransactionSeqNo(),
                 seqNo,
-                jpgFileFormat);
+                ".jpg");
         documentRepository.save(this.createDocumentEntity(
                 uploadDocument.getDocTransactionId(),
                 seqNo,
@@ -61,14 +58,6 @@ public class DocumentService {
                 documentUploadContext.getRemoteFilePath(),
                 documentUploadContext.getHireeDocumentPath(),
                 file);
-    }
-
-    String getJpgFormatOrThrow(String contentType) {
-        if (Objects.equals(contentType, "image/jpeg")) {
-            return ".jpg";
-        } else {
-            throw new RuntimeException("isn't JPEG file!");
-        }
     }
 
     Date getCurrentDate() {
